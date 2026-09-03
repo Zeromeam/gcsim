@@ -36,7 +36,11 @@ const (
 	dreamDrifterStateKey          = "dreamdrifter-state"
 	dreamDrifterBaseDuration      = 5 * 60
 	dreamDrifterSwirlBuffKey      = "mizuki-swirl-buff"
+	dreamDrifterEMBuffKey         = "mizuki-team-em-buff"
 	mizukiSwapOutKey              = "mizuki-exit"
+	witchICDKey                   = "mizuki-witch-revelation-icd"
+	witchICD                      = 2.5 * 60
+	witchEnhancedMult             = 10.0
 )
 
 func init() {
@@ -134,6 +138,7 @@ func (c *char) applyDreamDrifterEffect(travel int) {
 
 func (c *char) skillInit() {
 	for _, char := range c.Core.Player.Chars() {
+		char := char
 		char.AddReactBonusMod(character.ReactBonusMod{
 			Base: modifier.NewBase(dreamDrifterSwirlBuffKey, -1),
 			Amount: func(ai info.AttackInfo) float64 {
@@ -151,11 +156,27 @@ func (c *char) skillInit() {
 				case attacks.AttackTagSwirlElectro:
 				case attacks.AttackTagSwirlHydro:
 				case attacks.AttackTagSwirlPyro:
+				case attacks.AttackTagReactionStellarSwirl, attacks.AttackTagDirectStellarSwirl:
+					return stellarSwirlDMG[c.TalentLvlSkill()] * c.Stat(attributes.EM) * 0.01
 				default:
 					return 0
 				}
 
 				return swirlDMG[c.TalentLvlSkill()] * c.Stat(attributes.EM) * 0.01
+			},
+		})
+
+		char.AddStatMod(character.StatMod{
+			Base:         modifier.NewBase(dreamDrifterEMBuffKey, -1),
+			AffectedStat: attributes.EM,
+			Extra:        true,
+			Amount: func() []float64 {
+				if !c.StatusIsActive(dreamDrifterStateKey) {
+					return nil
+				}
+				m := make([]float64, attributes.EndStatType)
+				m[attributes.EM] = 0.10 * c.NonExtraStat(attributes.EM)
+				return m
 			},
 		})
 	}
@@ -231,6 +252,42 @@ func (c *char) cloudTask(travel, src, hitmark int) {
 			travel,
 			c.particleCB,
 		)
+		if c.witchReady {
+			c.witchReady = false
+			ap := combat.NewCircleHitOnTarget(c.Core.Combat.PrimaryTarget(), nil, cloudExplosionRadius)
+			enhanced := info.AttackInfo{
+				ActorIndex: c.Index(), Abil: "Vast Be the Dream",
+				AttackTag: attacks.AttackTagElementalArt, ICDTag: attacks.ICDTagNone,
+				ICDGroup: attacks.ICDGroupDefault, StrikeType: attacks.StrikeTypeDefault,
+				Element: attributes.Anemo, Mult: witchEnhancedMult, UseEM: true,
+			}
+			c.Core.QueueAttack(enhanced, ap, 0, travel)
+			if c.StatusIsActive("mizuki-radiance-stellar-swirl") {
+				enhanced.Abil += " (Stellar Swirl)"
+				enhanced.AttackTag = attacks.AttackTagDirectStellarSwirl
+				enhanced.IgnoreDefPercent = 1
+				c.Core.QueueAttack(enhanced, ap, 0, travel)
+			}
+		}
 		c.cloudTask(travel, src, cloudHitInterval)
 	}, hitmark)
+}
+
+func (c *char) witchRevelation() {
+	trigger := func(args ...any) {
+		atk := args[1].(*info.AttackEvent)
+		if atk.Info.ActorIndex != c.Index() || !c.StatusIsActive(dreamDrifterStateKey) || c.StatusIsActive(witchICDKey) {
+			return
+		}
+		c.witchReady = true
+		c.AddStatus(witchICDKey, witchICD, true)
+	}
+	c.Core.Events.Subscribe(event.OnSwirlPyro, trigger, "mizuki-witch-pyro")
+	c.Core.Events.Subscribe(event.OnSwirlHydro, trigger, "mizuki-witch-hydro")
+	c.Core.Events.Subscribe(event.OnSwirlElectro, trigger, "mizuki-witch-electro")
+	c.Core.Events.Subscribe(event.OnSwirlCryo, trigger, "mizuki-witch-cryo")
+	c.Core.Events.Subscribe(event.OnStellarSwirl, func(args ...any) {
+		c.AddStatus("mizuki-radiance-stellar-swirl", 8*60, true)
+		trigger(args...)
+	}, "mizuki-witch-stellar-swirl")
 }

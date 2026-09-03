@@ -1,0 +1,72 @@
+# C2 extension of the reproducible Prydwen C1 Sucrose-variant approximation.
+# See prydwen_c1_kqms_base.gcsim for the source/assumption notes. Substats are
+# omitted so the KQMS optimizer can account for C2 when distributing rolls.
+
+mizuki char lvl=90/90 cons=2 talent=9,9,9;
+mizuki add weapon="thewidsith" refine=5 lvl=90/90;
+mizuki add set="viridescentvenerer" count=4;
+mizuki add stats hp=4780 atk=311 em=374 cr=0.311;
+mizuki add stats def%=0.062*2 def=19.68*2 hp=253.94*2 hp%=0.0496*2 atk=16.54*2 atk%=0.0496*2 er=0.0551*2 em=19.82*4 cr=0.0331*10 cd=0.0662*12;
+
+sucrose char lvl=90/90 cons=6 talent=9,9,9;
+sucrose add weapon="sacrificialfragments" refine=5 lvl=90/90;
+sucrose add set="instructor" count=4;
+sucrose add stats hp=3571 atk=232 em=139+139+187;
+sucrose add stats def%=0.05208*2 def=16.5312*2 hp=213.31*2 hp%=0.041664*2 atk=13.8936*2 atk%=0.041664*2 er=0.046284*2 em=16.6488*6 cr=0.027804*5 cd=0.055608*7;
+
+odette char lvl=90/90 cons=0 talent=9,9,9;
+odette add weapon="finaleofthedeep" refine=5 lvl=90/90;
+odette add set="heartofthefurnace" count=4;
+odette add stats hp=4780 atk=311 atk%=0.932 cr=0.311;
+odette add stats def%=0.062*2 def=19.68*2 hp=253.94*2 hp%=0.0496*2 atk=16.54*2 atk%=0.0496*4 er=0.0551*2 em=19.82*2 cr=0.0331*10 cd=0.0662*12;
+
+aethercryo char lvl=90/90 cons=2 talent=9,9,9;
+aethercryo add weapon="exaiphanesblade" refine=3 lvl=90/90;
+aethercryo add set="adaycarvedfromrisingwinds" count=4;
+aethercryo add stats hp=4780 atk=311 atk%=0.932 cr=0.311;
+# Prydwen specifies 125% ER for this variant. Five total KQMS ER rolls give
+# 127.55% on the profile (before Traveler's separate story enhancement).
+aethercryo add stats def%=0.062*2 def=19.68*2 hp=253.94*2 hp%=0.0496*2 atk=16.54*2 atk%=0.0496*8 er=0.0551*5 em=19.82*3 cr=0.0331*2 cd=0.0662*12;
+
+options iteration=5000 duration=84.4;
+options swap_delay=30;
+
+target lvl=100 resist=0.1 radius=2 pos=0,2.4;
+
+active odette;
+
+for let i=0; i<4; i=i+1 {
+  odette skill, skill;
+
+  aethercryo skill;
+  if i > 0 {
+    aethercryo attack:1, charge;
+    if .aethercryo.burst.ready && .aethercryo.energy == .aethercryo.energymax {
+      aethercryo burst;
+    }
+  }
+
+  wait(.sucrose.swap.cd);
+  if .sucrose.skill.ready {
+    sucrose skill, dash;
+  } else {
+    sucrose attack:1;
+  }
+  wait(.sucrose.swap.cd);
+
+  mizuki skill;
+  if .mizuki.burst.ready && .mizuki.energy == .mizuki.energymax {
+    mizuki burst;
+  }
+  while .mizuki.mods.dreamdrifter-state {
+    wait(1);
+  }
+
+  wait(.sucrose.swap.cd);
+  if .sucrose.skill.ready {
+    sucrose skill, dash;
+  } else {
+    sucrose attack:1;
+  }
+  wait(.sucrose.swap.cd);
+}

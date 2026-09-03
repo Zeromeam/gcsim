@@ -1,0 +1,77 @@
+# Exact builds imported from the account snapshot supplied for this project.
+# Artifact lines contain the five pieces' main and substats; set and weapon
+# bonuses are applied separately by gcsim.
+
+mizuki char lvl=90/90 cons=2 talent=2,9,6;
+mizuki add weapon="sacrificialfragments" refine=5 lvl=90/90;
+mizuki add set="viridescentvenerer" count=4;
+mizuki add stats hp=5587 hp%=0.117 cr=0.315 er=0.201 em=546 atk=402 def=120 cd=0.762;
+
+odette char lvl=90/90 cons=0 talent=2,8,6;
+odette add weapon="primordialjadecutter" refine=1 lvl=90/90;
+odette add set="heartofthefurnace" count=4;
+odette add stats hp=5288 def%=0.284 def=118 cr=0.424 cd=1.089 atk=340 er=0.207 atk%=1.084 hp%=0.041;
+
+aethercryo char lvl=90/90 cons=2 talent=7,4,8;
+aethercryo add weapon="exaiphanesblade" refine=3 lvl=90/90;
+aethercryo add set="gladiatorsfinale" count=2;
+aethercryo add set="adaycarvedfromrisingwinds" count=2;
+aethercryo add stats hp=5557 em=42 cr=0.35 er=0.175 cd=1.275 atk=311 atk%=1.247 hp%=0.105 def%=0.175 def=39;
+
+sucrose char lvl=90/90 cons=6 talent=6,10,9;
+sucrose add weapon="wanderingevenstar" refine=4 lvl=90/90;
+sucrose add set="viridescentvenerer" count=4;
+sucrose add stats hp=4780 def=102 em=659 er=0.486 cr=0.171 atk=346 atk%=0.269 cd=0.42 hp%=0.093;
+
+options iteration=5000 duration=64.99;
+options swap_delay=30;
+
+target lvl=100 resist=0.1 radius=2 pos=0,2.4;
+
+active aethercryo;
+
+# Three modeled rotations inside the same 64.99 second window as the supplied
+# live observation. The exact live button sequence was not supplied, so this is
+# an independently calculated KQM/Prydwen-style rotation, not a fit to the
+# observed 62,694 DPS. The first setup omits Traveler's CA/Burst; later rotations
+# use E N1C Q. Sucrose is placed before the powered Traveler combo to refresh
+# Radiance, then again before Mizuki to refresh her EM share and VV.
+# Wandering Evenstar cannot reset Sucrose's 15 s Skill charge. The early setup
+# therefore spends a charge only when both are available; otherwise N1 supplies
+# Anemo without consuming the charge reserved for the pre-Mizuki Skill.
+for let i=0; i<3; i=i+1 {
+  if i == 0 {
+    aethercryo skill;
+    wait(.sucrose.swap.cd);
+    sucrose skill, dash;
+    wait(.sucrose.swap.cd);
+  } else {
+    wait(.sucrose.swap.cd);
+    if .sucrose.skill.charge > 1 {
+      sucrose skill, dash;
+    } else {
+      sucrose attack:1;
+    }
+    wait(.sucrose.swap.cd);
+    aethercryo skill;
+    aethercryo attack:1, charge;
+    while .aethercryo.energy < .aethercryo.energymax {
+      wait(1);
+    }
+    aethercryo burst;
+  }
+
+  odette skill, skill;
+  wait(.sucrose.swap.cd);
+  if .sucrose.skill.ready {
+    sucrose skill, dash;
+  } else {
+    sucrose attack:1;
+  }
+  wait(.sucrose.swap.cd);
+
+  mizuki skill;
+  while .mizuki.mods.dreamdrifter-state {
+    sleep(1);
+  }
+}

@@ -47,6 +47,52 @@
       "invalid": false
     }
   ],
+  "aethercryo": [
+    {
+      "ability": "attack",
+      "invalid": true
+    },
+    {
+      "ability": "aim",
+      "invalid": true
+    },
+    {
+      "ability": "charge",
+      "invalid": false
+    },
+    {
+      "ability": "low_plunge",
+      "invalid": true
+    },
+    {
+      "ability": "high_plunge",
+      "invalid": true
+    },
+    {
+      "ability": "skill",
+      "invalid": false
+    },
+    {
+      "ability": "burst",
+      "invalid": false
+    },
+    {
+      "ability": "dash",
+      "invalid": false
+    },
+    {
+      "ability": "jump",
+      "invalid": false
+    },
+    {
+      "ability": "walk",
+      "invalid": false
+    },
+    {
+      "ability": "swap",
+      "invalid": false
+    }
+  ],
   "aetherdendro": [
     {
       "ability": "attack",
@@ -3996,6 +4042,52 @@
       "ability": "high_plunge",
       "note": "Previous action must be a jump buffed via Xianyun's burst for example.",
       "invalid": false
+    },
+    {
+      "ability": "skill",
+      "invalid": false
+    },
+    {
+      "ability": "burst",
+      "invalid": false
+    },
+    {
+      "ability": "dash",
+      "invalid": false
+    },
+    {
+      "ability": "jump",
+      "invalid": false
+    },
+    {
+      "ability": "walk",
+      "invalid": false
+    },
+    {
+      "ability": "swap",
+      "invalid": false
+    }
+  ],
+  "odette": [
+    {
+      "ability": "attack",
+      "invalid": true
+    },
+    {
+      "ability": "aim",
+      "invalid": true
+    },
+    {
+      "ability": "charge",
+      "invalid": true
+    },
+    {
+      "ability": "low_plunge",
+      "invalid": true
+    },
+    {
+      "ability": "high_plunge",
+      "invalid": true
     },
     {
       "ability": "skill",

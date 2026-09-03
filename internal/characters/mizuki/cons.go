@@ -16,7 +16,8 @@ const (
 	c1Key               = "mizuki-c1"
 	c1Interval          = 3.5 * 60
 	c1Duration          = 3 * 60
-	c1Multiplier        = 11.0
+	c1SwirlMultiplier   = 11.0
+	c1StellarMultiplier = 5.5
 	c1Range             = 12
 	c2Key               = "mizuki-c2"
 	c2EMMultiplier      = 0.0004
@@ -32,11 +33,47 @@ const (
 // When Yumemizuki Mizuki is in the Dreamdrifter state, she will continuously apply the "Twenty-Three Nights' Awaiting"
 // effect to nearby opponents for 3s every 3.5s. When an opponent is affected by Anemo DMG-triggered Swirl reactions
 // while the aforementioned effect is active, the effect will be canceled and this Swirl instance has its DMG against
-// this opponent increased by 1100% of Mizuki's Elemental Mastery.
+// this opponent increased by 1100% of Mizuki's Elemental Mastery, or by 550% for Stellar Swirl.
 func (c *char) c1() {
 	if c.Base.Cons < 1 {
 		return
 	}
+
+	queueAdditionalAttack := func(e *enemy.Enemy, stellar bool) {
+		additional := info.AttackInfo{
+			ActorIndex: c.Index(), Abil: "Twenty-Three Nights' Awaiting",
+			AttackTag: attacks.AttackTagNone, ICDTag: attacks.ICDTagNone,
+			ICDGroup: attacks.ICDGroupDefault, StrikeType: attacks.StrikeTypeDefault,
+			Element: attributes.Anemo, Mult: 10.0, UseEM: true,
+		}
+		if stellar {
+			additional.AttackTag = attacks.AttackTagDirectStellarSwirl
+			additional.Mult = 4.0
+			additional.IgnoreDefPercent = 1
+		}
+		c.Core.QueueAttack(additional, combat.NewSingleTargetHit(e.Key()), 0, 0)
+	}
+
+	// Reaction SSW calculates each contributor before combining them. Put the
+	// additive bonus on the reaction trigger so it is included in every
+	// individual calculation before CRIT and contributor weighting.
+	c.Core.Events.Subscribe(event.OnStellarSwirl, func(args ...any) {
+		e, ok := args[0].(*enemy.Enemy)
+		if !ok || !e.StatusIsActive(c1Key) {
+			return
+		}
+		atk := args[1].(*info.AttackEvent)
+		additionalDmg := c1StellarMultiplier * c.c1EM
+		atk.Info.ReactionFlatDmg += additionalDmg
+
+		c.Core.Log.NewEvent("mizuki c1 stellar swirl proc", glog.LogPreDamageMod, atk.Info.ActorIndex).
+			Write("addition", additionalDmg)
+
+		// Triggering SSW grants Radiance, so the accompanying hit is direct
+		// Stellar Swirl damage even on the first reaction that grants it.
+		queueAdditionalAttack(e, true)
+		e.DeleteStatus(c1Key)
+	}, c1Key+"-stellar-swirl")
 
 	c.Core.Events.Subscribe(event.OnEnemyHit, func(args ...any) {
 		e, ok := args[0].(*enemy.Enemy)
@@ -65,7 +102,7 @@ func (c *char) c1() {
 			return
 		}
 
-		additionalDmg := c1Multiplier * c.c1EM
+		additionalDmg := c1SwirlMultiplier * c.c1EM
 
 		c.Core.Log.NewEvent("mizuki c1 proc", glog.LogPreDamageMod, atk.Info.ActorIndex).
 			Write("before", atk.Info.FlatDmg).
@@ -74,6 +111,8 @@ func (c *char) c1() {
 
 		atk.Info.FlatDmg += additionalDmg
 		atk.Info.Abil += " (Mizuki C1)"
+
+		queueAdditionalAttack(e, c.StatusIsActive("mizuki-radiance-stellar-swirl"))
 
 		// Cancel the effect
 		e.DeleteStatus(c1Key)
@@ -126,6 +165,22 @@ func (c *char) c2() {
 			},
 		})
 	}
+
+	c.Core.Events.Subscribe(event.OnEnemyHit, func(args ...any) {
+		if !c.StatusIsActive(dreamDrifterStateKey) {
+			return
+		}
+		t, ok := args[0].(*enemy.Enemy)
+		if !ok {
+			return
+		}
+		for _, ele := range []attributes.Element{attributes.Pyro, attributes.Hydro, attributes.Cryo, attributes.Electro, attributes.Anemo} {
+			t.AddResistMod(info.ResistMod{
+				Base: modifier.NewBaseWithHitlag(c2Key+"-"+ele.String(), 1),
+				Ele:  ele, Value: -0.20,
+			})
+		}
+	}, c2Key+"-res")
 }
 
 func (c *char) c2UpdateTask() {

@@ -24,6 +24,10 @@ func CalcLunarReactionDmg(lvl int, reactBonus float64, atk info.AttackInfo, em f
 		reactionMultiplier = 3
 	case attacks.AttackTagReactionLunarCrystallize:
 		reactionMultiplier = 1.6
+	case attacks.AttackTagReactionStellarSwirl:
+		// Stellar Swirl stores its 0.75/2/3 reaction multiplier on the
+		// contribution attack because it depends on the hit and Vortex level.
+		reactionMultiplier = atk.Mult
 	}
 	return (reactionMultiplier*(1+((6*em)/(2000+em))+reactBonus)*CalcReactionBaseDmg(lvl)*(1+atk.BaseDmgBonus) + atk.FlatDmg) * (1 + atk.Elevation)
 }

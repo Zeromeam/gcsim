@@ -1,0 +1,12 @@
+use: pipeline
+kind: weapon
+name: exaiphanesblade
+
+talents:
+  - passiveATK: passive#0
+  - passiveDuration: passive#1
+
+abilities:
+  - name: default
+    params:
+      resonances: Number of Elements the Traveler has resonated with (0-7). Defaults to 7.

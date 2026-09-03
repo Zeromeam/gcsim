@@ -1479,6 +1479,13 @@
       "desc": "Number of seconds to extend Burst by. Value must be between 0 and 10. Default 10."
     }
   ],
+  "odette": [
+    {
+      "ability": "skill",
+      "param": "second",
+      "desc": "0 uses Phantom Night Dancers; 1 uses Coda at Dawn's Tolling. The second cast is also selected automatically while Coda is available."
+    }
+  ],
   "ororon": [
     {
       "ability": "attack",

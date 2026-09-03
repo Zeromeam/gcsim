@@ -55,6 +55,8 @@ func NewSet(c *core.Core, char *character.CharWrapper, count int, param map[stri
 			case attacks.AttackTagSwirlElectro:
 			case attacks.AttackTagSwirlHydro:
 			case attacks.AttackTagSwirlPyro:
+			case attacks.AttackTagReactionStellarSwirl, attacks.AttackTagDirectStellarSwirl:
+				return 0.2
 			default:
 				return 0
 			}
@@ -90,6 +92,7 @@ func NewSet(c *core.Core, char *character.CharWrapper, count int, param map[stri
 	c.Events.Subscribe(event.OnSwirlElectro, vvfunc(attributes.Electro, "vvelectro"), fmt.Sprintf("vv-4pc-%v", char.Base.Key.String()))
 	c.Events.Subscribe(event.OnSwirlHydro, vvfunc(attributes.Hydro, "vvhydro"), fmt.Sprintf("vv-4pc-%v", char.Base.Key.String()))
 	c.Events.Subscribe(event.OnSwirlPyro, vvfunc(attributes.Pyro, "vvpyro"), fmt.Sprintf("vv-4pc-%v", char.Base.Key.String()))
+	c.Events.Subscribe(event.OnStellarSwirl, vvfunc(attributes.Cryo, "vvcryo"), fmt.Sprintf("vv-4pc-stellar-%v", char.Base.Key.String()))
 
 	// Additional event for on damage proc on secondary targets
 	// Got some very unexpected results when trying to modify the above vvfunc to allow for this, so I'm just copying it separately here
@@ -116,6 +119,9 @@ func NewSet(c *core.Core, char *character.CharWrapper, count int, param map[stri
 		case attacks.AttackTagSwirlElectro:
 		case attacks.AttackTagSwirlHydro:
 		case attacks.AttackTagSwirlPyro:
+		case attacks.AttackTagReactionStellarSwirl:
+			ele = attributes.Cryo
+			key = "vvcryo"
 		default:
 			return
 		}

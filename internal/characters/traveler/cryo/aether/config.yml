@@ -1,0 +1,63 @@
+use: pipeline
+kind: character
+name: aethercryo
+
+override:
+  id: 10000005
+  depot: 505
+
+shortcuts:
+  - travelercryo
+  - cryotraveler
+
+talents:
+  - attack1: attack(1-Hit DMG)
+  - attack2: attack(2-Hit DMG)
+  - attack3: attack(3-Hit DMG)
+  - attack4: attack(4-Hit DMG)
+  - attack5: attack(5-Hit DMG)
+  - charge1: attack(Charged Attack DMG)
+  - charge2: attack(Charged Attack DMG|1)
+  - collision: attack(Plunge DMG)
+  - lowPlunge: attack(Low/High Plunge DMG)
+  - highPlunge: attack(Low/High Plunge DMG|1)
+
+  - skillDMG: skill(Skill DMG)
+  - crystalDMG: skill(Ice Crystal DMG)
+
+  - burstJavelinDMG: burst(Ice Javelin DMG)
+  - burstFrostglowBonus: burst(Frostglow DMG Bonus)
+  - burstConductJavelinDMG: burst(Stellar-Conduct Ice Javelin Single Strike DMG)
+  - burstConductFrostglowBonus: burst(Stellar-Conduct Frostglow DMG Bonus)
+  - burstSwirlJavelinDMG: burst(Stellar Swirl Ice Javelin Single Strike DMG)
+  - burstSwirlFrostglowBonus: burst(Stellar Swirl Frostglow DMG Bonus)
+
+abilities:
+  - name: skill
+    hitbox:
+      - name: E
+        shape: Circle
+        center: PrimaryTarget
+        radius: 3
+      - name: E-Ice-Crystal
+        shape: Circle
+        center: PrimaryTarget
+        radius: 2.5
+
+  - name: burst
+    hitbox:
+      - name: Q-Ice-Javelin
+        shape: Circle
+        center: PrimaryTarget
+        radius: 4
+
+  - name: charge
+    hitbox:
+      - name: CA-1
+        shape: Circle
+        center: Player
+        radius: 2.2
+      - name: CA-2
+        shape: Circle
+        center: Player
+        radius: 2.2

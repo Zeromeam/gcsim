@@ -19,6 +19,7 @@ type char struct {
 	c1EM                            float64
 	c2Buff                          []float64
 	c4EnergyGenerationsRemaining    int
+	witchReady                      bool
 }
 
 func NewChar(s *core.Core, w *character.CharWrapper, _ info.CharacterProfile) error {
@@ -42,6 +43,7 @@ func (c *char) Init() error {
 	c.c1()
 	c.c2()
 	c.c6()
+	c.witchRevelation()
 	return nil
 }
 

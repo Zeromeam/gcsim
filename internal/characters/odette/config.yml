@@ -1,0 +1,51 @@
+use: pipeline
+kind: character
+name: odette
+
+talents:
+  - attack1: attack(1-Hit DMG)
+  - attack2: attack(2-Hit DMG)
+  - attack31: attack(3-Hit DMG)
+  - attack32: attack(3-Hit DMG|1)
+  - attack4: attack(4-Hit DMG)
+  - attack5: attack(5-Hit DMG)
+  - charge: attack(Charged Attack DMG)
+  - collision: attack(Plunge DMG)
+  - lowPlunge: attack(Low/High Plunge DMG)
+  - highPlunge: attack(Low/High Plunge DMG|1)
+
+  - skillDMG: skill(Skill DMG)
+  - codaDotDMG: skill(Coda at Dawn's Tolling DoT)
+  - codaConductDMG: skill(Coda at Dawn's Tolling Stellar-Conduct/Stellar Swirl DMG)
+  - codaSwirlDMG: skill(Coda at Dawn's Tolling Stellar-Conduct/Stellar Swirl DMG|1)
+  - plumeDMG: skill("Plume" Dance Move DMG)
+  - plumeConductDMG: skill("Plume" Dance Move Stellar-Conduct/Stellar Swirl DMG)
+  - plumeSwirlDMG: skill("Plume" Dance Move Stellar-Conduct/Stellar Swirl DMG|1)
+  - wingDMG: skill("Wing" Dance Move DMG)
+  - wingConductDMG: skill("Wing" Dance Move Stellar-Conduct/Stellar Swirl DMG)
+  - wingSwirlDMG: skill("Wing" Dance Move Stellar-Conduct/Stellar Swirl DMG|1)
+
+  - burstSlashDMG: burst(Slash DMG)
+  - burstFinalDMG: burst(Final Slash DMG)
+  - burstStellarBonus: burst(Snow Swan's Dream Stellar Glimmer Reaction DMG Bonus)
+
+abilities:
+  - name: skill
+    params:
+      second: 0 uses Phantom Night Dancers; 1 uses Coda at Dawn's Tolling. The second cast is also selected automatically while Coda is available.
+    hitbox:
+      - name: E-Initial
+        shape: Circle
+        center: Player
+        radius: 5
+      - name: E-Coda
+        shape: Circle
+        center: Player
+        radius: 5
+
+  - name: burst
+    hitbox:
+      - name: Q
+        shape: Circle
+        center: Player
+        radius: 6

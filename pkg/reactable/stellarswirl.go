@@ -29,10 +29,10 @@ type sswContribution = struct {
 	ae      info.AttackEvent
 }
 
-func (r *Reactable) queueStellarSwirl(charIndex int) {
+func (r *Reactable) queueStellarSwirl(trigger *info.AttackEvent) {
 	// stellar swirl triggers an aoe attack
 	ai := info.AttackInfo{
-		ActorIndex:       charIndex,
+		ActorIndex:       trigger.Info.ActorIndex,
 		DamageSrc:        r.self.Key(),
 		Abil:             "Stellar Swirl",
 		AttackTag:        attacks.AttackTagReactionStellarSwirl,
@@ -40,13 +40,14 @@ func (r *Reactable) queueStellarSwirl(charIndex int) {
 		ICDGroup:         attacks.ICDGroupReactionA, // TODO: use stellar swirl ICD group
 		StrikeType:       attacks.StrikeTypeDefault,
 		Element:          attributes.Anemo,
+		FlatDmg:          trigger.Info.ReactionFlatDmg,
 		IgnoreDefPercent: 1,
 	}
 	ap := combat.NewCircleHitOnTarget(r.self, nil, 5)
 
 	var contribMap [info.MaxChars]bool
 
-	contribMap[charIndex] = true
+	contribMap[trigger.Info.ActorIndex] = true
 	for charInd, dur := range r.Durability[info.ReactionModKeyCryo] {
 		if dur <= info.ZeroDur {
 			continue
@@ -74,12 +75,12 @@ func (r *Reactable) queueStellarSwirl(charIndex int) {
 			continue
 		}
 		ai, snap := r.calcStellarSwirlDmg(e, ai, ap, contribMap, 0.75)
-		ai.ActorIndex = charIndex
+		ai.ActorIndex = trigger.Info.ActorIndex
 		r.core.QueueAttackWithSnap(ai, snap, combat.NewSingleTargetHit(e.Key()), 3)
 	}
 
 	r.addSSwContributor(contribMap)
-	r.setSSwOwner(charIndex)
+	r.setSSwOwner(trigger.Info.ActorIndex)
 
 	r.addSSwStack()
 
@@ -95,6 +96,12 @@ func (r *Reactable) queueStellarSwirl(charIndex int) {
 
 func (r *Reactable) nearbySSwVortex() info.Gadget {
 	for _, g := range r.core.Combat.Gadgets() {
+		// Removed gadgets leave a nil slot in the combat handler. Stellar
+		// Swirl can look for a new vortex after the previous one detonates, so
+		// those slots must be skipped.
+		if g == nil {
+			continue
+		}
 		if g.GadgetTyp() == info.GadgetTypStellarVortex {
 			return g
 		}
@@ -110,6 +117,7 @@ func (r *Reactable) calcStellarSwirlDmg(target info.Target, ai info.AttackInfo, 
 		}
 
 		ai.ActorIndex = charInd
+		ai.Mult = mult
 		snap := char.Snapshot(&ai)
 
 		ae := info.AttackEvent{
@@ -126,7 +134,7 @@ func (r *Reactable) calcStellarSwirlDmg(target info.Target, ai info.AttackInfo, 
 		cr := ae.Snapshot.Stats[attributes.CR]
 		cd := ae.Snapshot.Stats[attributes.CD]
 
-		flatdmg := mult * combat.CalcLunarReactionDmg(char.Base.Level, char.ReactBonus(ae.Info), ae.Info, em)
+		flatdmg := combat.CalcLunarReactionDmg(char.Base.Level, char.ReactBonus(ae.Info), ae.Info, em)
 		isCrit := false
 
 		if r.core.Rand.Float64() <= cr {
@@ -153,6 +161,10 @@ func (r *Reactable) calcStellarSwirlDmg(target info.Target, ai info.AttackInfo, 
 		}
 	})
 
+	// ReactionFlatDmg has already been included in every individual
+	// contribution above. Replace the carrier value before combining them so
+	// the additive term is not applied a second time by the final damage hit.
+	ai.FlatDmg = 0
 	for i := range contributions {
 		contr := &contributions[i]
 		r.core.Combat.Log.NewEvent(fmt.Sprint("stellar swirl contributor ", (i+1)), glog.LogElementEvent, contr.charInd).
@@ -171,6 +183,10 @@ func (r *Reactable) calcStellarSwirlDmg(target info.Target, ai info.AttackInfo, 
 
 		ai.FlatDmg += contr.dmg * sswContributorMult[i]
 	}
+	// Mult is only an input to each contributor calculation. The final queued
+	// reaction hit uses the already-combined FlatDmg and must not add a normal
+	// ATK-scaling term.
+	ai.Mult = 0
 
 	snap := info.Snapshot{}
 	if contributions[0].isCrit {
@@ -200,7 +216,7 @@ func (r *Reactable) tryStellarSwirl(a *info.AttackEvent, mod info.ReactionModKey
 
 	r.core.Events.Emit(event.OnStellarSwirl, r.self, a)
 
-	r.queueStellarSwirl(a.Info.ActorIndex)
+	r.queueStellarSwirl(a)
 
 	rd := r.reduce(attributes.Cryo, a.Info.Durability, 0.5)
 	a.Info.Durability -= rd
@@ -236,7 +252,7 @@ func (r *Reactable) sswContributors() [info.MaxChars]bool {
 }
 
 func (r *Reactable) addSSwStack() {
-	r.core.Flags.Custom[sswStackKey] += min(r.core.Flags.Custom[sswStackKey]+1, sswMaxStacks)
+	r.core.Flags.Custom[sswStackKey] = min(r.core.Flags.Custom[sswStackKey]+1, sswMaxStacks)
 }
 
 func (r *Reactable) sswStacks() int {

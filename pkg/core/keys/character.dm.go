@@ -44,6 +44,7 @@ func _comptime_Char() {
 const (
 	NoChar            Char = iota //
 	AetherAnemo                   // aetheranemo
+	AetherCryo                    // aethercryo
 	AetherDendro                  // aetherdendro
 	AetherElectro                 // aetherelectro
 	AetherGeo                     // aethergeo
@@ -127,6 +128,7 @@ const (
 	Nilou                         // nilou
 	Ningguang                     // ningguang
 	Noelle                        // noelle
+	Odette                        // odette
 	Ororon                        // ororon
 	Qiqi                          // qiqi
 	RaidenShogun                  // raidenshogun
@@ -168,6 +170,7 @@ const (
 var _CharNames = [...]string{
 	"",
 	"aetheranemo",
+	"aethercryo",
 	"aetherdendro",
 	"aetherelectro",
 	"aethergeo",
@@ -251,6 +254,7 @@ var _CharNames = [...]string{
 	"nilou",
 	"ningguang",
 	"noelle",
+	"odette",
 	"ororon",
 	"qiqi",
 	"raidenshogun",
@@ -292,6 +296,7 @@ var _CharNames = [...]string{
 var _CharValues = [...]Char{
 	NoChar,
 	AetherAnemo,
+	AetherCryo,
 	AetherDendro,
 	AetherElectro,
 	AetherGeo,
@@ -375,6 +380,7 @@ var _CharValues = [...]Char{
 	Nilou,
 	Ningguang,
 	Noelle,
+	Odette,
 	Ororon,
 	Qiqi,
 	RaidenShogun,

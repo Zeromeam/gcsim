@@ -1,0 +1,9 @@
+use: pipeline
+kind: artifact
+name: heartofthefurnace
+
+talents:
+  - set2ATK: set2#0
+  - set4ATK: set4#0
+  - set4StellarDMG: set4#1
+  - set4Duration: set4#2

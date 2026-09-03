@@ -61,6 +61,7 @@ func (c *char) a1() {
 	c.Core.Events.Subscribe(event.OnSwirlElectro, swirlfunc(attributes.Electro), "sucrose-a1-electro")
 	c.Core.Events.Subscribe(event.OnSwirlHydro, swirlfunc(attributes.Hydro), "sucrose-a1-hydro")
 	c.Core.Events.Subscribe(event.OnSwirlPyro, swirlfunc(attributes.Pyro), "sucrose-a1-pyro")
+	c.Core.Events.Subscribe(event.OnStellarSwirl, swirlfunc(attributes.Cryo), "sucrose-a1-stellar-swirl")
 }
 
 // When Astable Anemohypostasis Creation - 6308 or Forbidden Creation - Isomer 75 / Type II hits an opponent,
