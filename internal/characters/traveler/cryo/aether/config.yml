@@ -33,6 +33,7 @@ talents:
   - burstSwirlFrostglowBonus: burst(Stellar Swirl Frostglow DMG Bonus)
 
 abilities:
+  - name: attack
   - name: skill
     hitbox:
       - name: E

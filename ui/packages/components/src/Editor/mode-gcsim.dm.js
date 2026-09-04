@@ -172,6 +172,7 @@ ace.define(
         'lisa',
         'lumineanemo',
         'traveleranemo',
+        'luminecryo',
         'luminedendro',
         'travelerdendro',
         'lumineelectro',

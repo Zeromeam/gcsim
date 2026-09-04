@@ -21,8 +21,14 @@ const (
 	// sequence is timed from action start, so keep the runtime status alive for
 	// that appearance delay as well as the listed 20 second field duration.
 	doubleLifetime = doubleDuration + 60
-	codaDuration   = 3 * 60
+	// The special Skill can be queued as the initial Skill hit lands. Its
+	// three duet hits occur at roughly 1/3-second intervals, followed by the
+	// final Coda at 80f. These timings are visible in the 7.0 dummy showcase:
+	// initial hit at 2.31s, duet damage through 3.30s, final hit at 3.63s.
+	codaDuration = 80
 )
+
+var codaDotHitmarks = []int{20, 40, 60}
 
 // Measured from the summon action start. The live 7.0 sequence alternates
 // Plume/Wing and ends just before the 20 second summon expires.
@@ -30,7 +36,8 @@ var doubleHitmarks = []int{168, 282, 408, 516, 642, 756, 885, 996, 1122, 1236}
 
 func init() {
 	skillFrames = frames.InitAbilSlice(120)
-	skillFrames[action.ActionSkill] = 120
+	// Odette can immediately enter Coda when the summoning hit lands.
+	skillFrames[action.ActionSkill] = skillHitmark
 	skillFrames[action.ActionSwap] = 120
 	codaFrames = frames.InitAbilSlice(codaDuration)
 	codaFrames[action.ActionSwap] = codaDuration
@@ -51,7 +58,7 @@ func (c *char) Skill(p map[string]int) (action.Info, error) {
 	c.summonDouble()
 	c.AddStatus(codaWindowKey, 6*60, true)
 	c.SetCD(action.ActionSkill, 15*60)
-	return action.Info{Frames: frames.NewAbilFunc(skillFrames), AnimationLength: skillFrames[action.InvalidAction], CanQueueAfter: skillFrames[action.ActionSwap], State: action.SkillState}, nil
+	return action.Info{Frames: frames.NewAbilFunc(skillFrames), AnimationLength: skillFrames[action.InvalidAction], CanQueueAfter: skillHitmark, State: action.SkillState}, nil
 }
 
 func (c *char) coda() (action.Info, error) {
@@ -64,7 +71,7 @@ func (c *char) coda() (action.Info, error) {
 		ICDGroup: attacks.ICDGroupDefault, StrikeType: attacks.StrikeTypeDefault,
 		Element: attributes.Cryo, Durability: 10, Mult: codaDotDMG[c.TalentLvlSkill()],
 	}
-	for _, hitmark := range []int{30, 90, 150} {
+	for _, hitmark := range codaDotHitmarks {
 		c.Core.QueueAttack(dot, combat.NewCircleHitOnTarget(c.Core.Combat.Player(), nil, 5), hitmark, hitmark, c.particleCB)
 	}
 
@@ -139,10 +146,13 @@ func (c *char) doubleAttack(plume bool) {
 	}
 	ai := info.AttackInfo{
 		ActorIndex: c.Index(), Abil: name, AttackTag: attacks.AttackTagElementalArt,
-		ICDTag: attacks.ICDTagElementalArt, ICDGroup: attacks.ICDGroupDefault,
+		ICDTag: attacks.ICDTagNone, ICDGroup: attacks.ICDGroupDefault,
 		StrikeType: attacks.StrikeTypeDefault, Element: attributes.Cryo,
 		Durability: 25, Mult: mult, IsDeployable: true,
 	}
+	// Each periodic Dance Double attack applies Cryo. Sharing standard Skill
+	// ICD with the summon and Coda under-applies Cryo and breaks the continuous
+	// off-field application visible in the live rotation.
 	ap := combat.NewCircleHitOnTarget(c.Core.Combat.PrimaryTarget(), nil, 5)
 	c.Core.QueueAttack(ai, ap, 0, 0)
 	// Coda snapshots whether the Dance Double was converted while Odette was

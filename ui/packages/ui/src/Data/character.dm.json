@@ -1139,6 +1139,23 @@
         "burst_energy_cost": 60
       }
     },
+    "luminecryo": {
+      "id": 10000007,
+      "sub_id": 705,
+      "key": "luminecryo",
+      "rarity": "QUALITY_ORANGE",
+      "body": "BODY_GIRL",
+      "region": "ASSOC_TYPE_MAINACTOR",
+      "element": "Ice",
+      "weapon_class": "WEAPON_SWORD_ONE_HAND",
+      "icon_name": "UI_AvatarIcon_PlayerGirl",
+      "skill_details": {
+        "skill": 10127,
+        "burst": 10128,
+        "attack": 100554,
+        "burst_energy_cost": 60
+      }
+    },
     "luminedendro": {
       "id": 10000007,
       "sub_id": 708,

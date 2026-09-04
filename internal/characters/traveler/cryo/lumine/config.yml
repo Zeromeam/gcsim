@@ -1,0 +1,13 @@
+use: pipeline
+kind: character
+name: luminecryo
+
+override:
+  id: 10000007
+  depot: 705
+
+abilities:
+  - name: attack
+  - name: skill
+  - name: burst
+  - name: charge

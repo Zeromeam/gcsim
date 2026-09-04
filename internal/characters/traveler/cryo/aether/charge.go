@@ -11,15 +11,29 @@ import (
 	"github.com/genshinsim/gcsim/pkg/core/info"
 )
 
-var chargeFrames []int
+var (
+	chargeFrames   [][]int
+	chargeHitmarks = [][]int{
+		{10, 21}, // Aether
+		{14, 25}, // Lumine
+	}
+)
 
 func init() {
-	chargeFrames = frames.InitAbilSlice(55)
-	chargeFrames[action.ActionSkill] = 37
-	chargeFrames[action.ActionBurst] = 36
-	chargeFrames[action.ActionDash] = 21
-	chargeFrames[action.ActionJump] = 21
-	chargeFrames[action.ActionSwap] = 44
+	chargeFrames = make([][]int, 2)
+	chargeFrames[0] = frames.InitAbilSlice(55)
+	chargeFrames[0][action.ActionSkill] = 37
+	chargeFrames[0][action.ActionBurst] = 36
+	chargeFrames[0][action.ActionDash] = 21
+	chargeFrames[0][action.ActionJump] = 21
+	chargeFrames[0][action.ActionSwap] = 44
+
+	chargeFrames[1] = frames.InitAbilSlice(58)
+	chargeFrames[1][action.ActionSkill] = 34
+	chargeFrames[1][action.ActionBurst] = 35
+	chargeFrames[1][action.ActionDash] = 25
+	chargeFrames[1][action.ActionJump] = 25
+	chargeFrames[1][action.ActionSwap] = 25
 }
 
 func (c *char) ChargeAttack(p map[string]int) (action.Info, error) {
@@ -30,7 +44,11 @@ func (c *char) ChargeAttack(p map[string]int) (action.Info, error) {
 		c.AddStatus("cryo-traveler-freezing-ice-icd", 15*60, true)
 	}
 
-	for i, mults := range [][]float64{charge1, charge2} {
+	chargeMults := [][]float64{charge1, charge2}
+	if c.gender == 1 {
+		chargeMults[1] = lumineCharge2
+	}
+	for i, mults := range chargeMults {
 		ai := info.AttackInfo{
 			ActorIndex: c.Index(), Abil: fmt.Sprintf("Charged Attack %d", i+1),
 			AttackTag: attacks.AttackTagExtra, ICDTag: attacks.ICDTagNormalAttack,
@@ -48,9 +66,9 @@ func (c *char) ChargeAttack(p map[string]int) (action.Info, error) {
 				ai.IgnoreDefPercent = 1
 			}
 		}
-		hitmark := []int{10, 21}[i]
+		hitmark := chargeHitmarks[c.gender][i]
 		c.Core.QueueAttack(ai, combat.NewCircleHitOnTarget(c.Core.Combat.Player(), nil, 2.5), hitmark, hitmark)
 	}
 	c.ResetNormalCounter()
-	return action.Info{Frames: frames.NewAbilFunc(chargeFrames), AnimationLength: chargeFrames[action.InvalidAction], CanQueueAfter: 21, State: action.ChargeAttackState}, nil
+	return action.Info{Frames: frames.NewAbilFunc(chargeFrames[c.gender]), AnimationLength: chargeFrames[c.gender][action.InvalidAction], CanQueueAfter: chargeHitmarks[c.gender][1], State: action.ChargeAttackState}, nil
 }

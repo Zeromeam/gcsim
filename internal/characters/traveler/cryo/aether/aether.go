@@ -15,10 +15,22 @@ type char struct {
 	starSrc   int
 	frostglow int
 	icepoint  int
+	gender    int
 }
 
 func NewChar(s *core.Core, w *character.CharWrapper, p info.CharacterProfile) error {
-	c := char{starSrc: -1}
+	return newChar(s, w, p, 0)
+}
+
+// NewLumineChar creates the female Cryo Traveler. Cryo Traveler's skill and
+// burst mechanics are shared, but her Normal/Charged frame data and second
+// Charged Attack multiplier differ from Aether's.
+func NewLumineChar(s *core.Core, w *character.CharWrapper, p info.CharacterProfile) error {
+	return newChar(s, w, p, 1)
+}
+
+func newChar(s *core.Core, w *character.CharWrapper, p info.CharacterProfile, gender int) error {
+	c := char{starSrc: -1, gender: gender}
 	c.Character = tmpl.NewWithWrapper(s, w)
 	c.Base.Element = attributes.Cryo
 	c.EnergyMax = 60

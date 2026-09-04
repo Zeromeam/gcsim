@@ -1,0 +1,104 @@
+# Reproduction of Key_Influence_8972's recorded 168,551-DPS dummy showcase:
+# https://www.reddit.com/r/MizukiMainsGI/comments/1w3759x/
+#
+# Builds are transcribed from the cards at the end of the recording. The
+# rotation follows the recorded timeline: opening Cryo -> Sucrose E -> Odette
+# EE -> Mizuki, then Sucrose Q (or dash N1 while Q is unavailable), Lumine
+# E N1C Q, Odette EE, Sucrose E, and Mizuki. Mizuki leaves after the fourth
+# enhanced Dreamdrifter hit on Burst rotations; her Burst is inserted after
+# the first Dreamdrifter attack. The waits below reproduce the visible switch
+# points rather than extending each field window to the full Skill duration.
+
+mizuki char lvl=90/90 cons=0 talent=1,9,8;
+mizuki add weapon="reliquaryoftruth" refine=1 lvl=90/90;
+mizuki add set="nightoftheskysunveiling" count=2;
+mizuki add set="wandererstroupe" count=2;
+mizuki add stats hp=5348 atk=329 atk%=0.099 def=19 def%=0.204 em=533 cr=0.619 cd=1.072 er=0.058;
+
+odette char lvl=90/90 cons=0 talent=1,9,1;
+odette add weapon="primordialjadecutter" refine=1 lvl=90/90;
+odette add set="heartofthefurnace" count=4;
+odette add stats hp=5796 atk=311 atk%=1.369 def=42 def%=0.146 em=40 cr=0.253 cd=1.672 er=0.052;
+
+luminecryo char lvl=90/90 cons=2 talent=9,1,9;
+luminecryo add weapon="exaiphanesblade" refine=3 lvl=90/90;
+luminecryo add set="shimenawasreminiscence" count=2;
+luminecryo add set="adaycarvedfromrisingwinds" count=2;
+luminecryo add stats hp=5318 atk=350 atk%=1.032 def=21 def%=0.066 em=61 cr=0.392 cd=1.648 er=0.234;
+
+sucrose char lvl=90/90 cons=6 talent=1,6,6;
+sucrose add weapon="sacrificialfragments" refine=5 lvl=90/90;
+sucrose add set="viridescentvenerer" count=4;
+# The final profile shows 971 EM and 168.7% ER. These aggregate values avoid
+# hidden decimal rounding in the five displayed artifact cards.
+sucrose add stats hp=4780 atk=360 atk%=0.094 def=35 def%=0.183 em=750 cr=0.148 cd=0.233 er=0.687;
+
+options iteration=20000 duration=120.03;
+options swap_delay=12;
+
+# The in-game Abyss-12 dummy is Level 100 with 10% base elemental RES.
+target lvl=100 resist=0.1 radius=2 pos=0,2.4;
+
+active luminecryo;
+
+# First rotation: establish Cryo before Odette, then enter Mizuki immediately.
+luminecryo skill;
+sucrose skill, dash;
+odette skill, skill;
+mizuki skill;
+wait(41);
+if .mizuki.burst.ready && .mizuki.energy == .mizuki.energymax {
+  mizuki burst;
+  wait(400);
+} else {
+  wait(491);
+}
+
+# Later rotations use Lumine's Freezing Ice and Frostbound Javelin before the
+# Odette/Sucrose setup. Readiness guards keep the recording's real energy and
+# Sacrificial Fragments outcomes rather than forcing unavailable actions.
+for let i=0; i<9; i=i+1 {
+  # The footage's Q icon enters its 20-second cooldown at this transition.
+  # The dash-N1 before Q refreshes VV on-field; on alternate short rotations,
+  # E is used here and supplies both VV and Sucrose's A4.
+  if .sucrose.burst.ready && .sucrose.energy == .sucrose.energymax {
+    sucrose dash;
+    sucrose attack:1;
+    sucrose burst;
+  } else {
+    sucrose skill, dash;
+  }
+
+  luminecryo skill;
+  luminecryo attack:1, charge;
+  # Allow the Skill particles to arrive before checking the Burst. In the
+  # recording, Lumine receives them during the N1C animation and Bursts each
+  # rotation; this pickup window accounts for her faster N1-to-Charged cancel
+  # and prevents the check from incorrectly skipping alternate Bursts.
+  wait(16);
+  if .luminecryo.burst.ready && .luminecryo.energy == .luminecryo.energymax {
+    luminecryo burst;
+  }
+
+  odette skill, skill;
+
+  # If Q was unavailable at the first Sucrose transition, it has recovered by
+  # this point and identifies the alternating dash-N1 slot. Otherwise E
+  # refreshes A4 for Mizuki after a just-used Q.
+  if .sucrose.burst.ready {
+    sucrose dash, attack:1;
+  } else {
+    sucrose skill, dash;
+  }
+
+  mizuki skill;
+  # This eleven-frame extension lets the last incoming setup particles arrive
+  # before the energy check. The video uses Mizuki's Burst on rotations 1/3/5/7.
+  wait(41);
+  if .mizuki.burst.ready && .mizuki.energy == .mizuki.energymax {
+    mizuki burst;
+    wait(383);
+  } else {
+    wait(408);
+  }
+}

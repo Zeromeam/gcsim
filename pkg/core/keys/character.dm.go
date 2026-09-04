@@ -110,6 +110,7 @@ const (
 	Layla                         // layla
 	Lisa                          // lisa
 	LumineAnemo                   // lumineanemo
+	LumineCryo                    // luminecryo
 	LumineDendro                  // luminedendro
 	LumineElectro                 // lumineelectro
 	LumineGeo                     // luminegeo
@@ -236,6 +237,7 @@ var _CharNames = [...]string{
 	"layla",
 	"lisa",
 	"lumineanemo",
+	"luminecryo",
 	"luminedendro",
 	"lumineelectro",
 	"luminegeo",
@@ -362,6 +364,7 @@ var _CharValues = [...]Char{
 	Layla,
 	Lisa,
 	LumineAnemo,
+	LumineCryo,
 	LumineDendro,
 	LumineElectro,
 	LumineGeo,

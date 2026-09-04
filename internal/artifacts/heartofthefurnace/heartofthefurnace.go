@@ -15,19 +15,48 @@ import (
 const buffKey = "heart-of-the-furnace-4pc"
 
 type Set struct {
+	core  *core.Core
 	Index int
 	Count int
 }
 
 func (s *Set) SetIndex(idx int) { s.Index = idx }
 func (s *Set) GetCount() int    { return s.Count }
-func (s *Set) Init() error      { return nil }
+func (s *Set) Init() error {
+	if s.Count < 4 {
+		return nil
+	}
+
+	teamBuffActive := func() bool {
+		for _, holder := range s.core.Player.Chars() {
+			if holder.StatusIsActive(buffKey) {
+				return true
+			}
+		}
+		return false
+	}
+	// Artifact constructors run while the config is still adding characters.
+	// Register the party-wide modifier here, after the complete team exists,
+	// so the result does not depend on the holder's slot in the config.
+	for _, teammate := range s.core.Player.Chars() {
+		teammate.AddReactBonusMod(character.ReactBonusMod{
+			Base: modifier.NewBase(buffKey+"-team", -1),
+			Amount: func(ai info.AttackInfo) float64 {
+				if !teamBuffActive() || !attacks.AttackTagIsStellar(ai.AttackTag) {
+					return 0
+				}
+				return set4StellarDMG
+			},
+		})
+	}
+	return nil
+}
 
 // NewSet implements Heart of the Furnace's wearer ATK buff and its party-wide
 // Stellar Glimmer reaction bonus. Both effects share the same 12 second status
 // and can be refreshed by the wearer from off-field.
 func NewSet(c *core.Core, char *character.CharWrapper, count int, _ map[string]int) (info.Set, error) {
-	s := &Set{Count: count}
+	s := &Set{core: c, Count: count}
 
 	if count >= 2 {
 		buff := make([]float64, attributes.EndStatType)
@@ -41,26 +70,6 @@ func NewSet(c *core.Core, char *character.CharWrapper, count int, _ map[string]i
 
 	if count < 4 {
 		return s, nil
-	}
-
-	teamBuffActive := func() bool {
-		for _, holder := range c.Player.Chars() {
-			if holder.StatusIsActive(buffKey) {
-				return true
-			}
-		}
-		return false
-	}
-	for _, teammate := range c.Player.Chars() {
-		teammate.AddReactBonusMod(character.ReactBonusMod{
-			Base: modifier.NewBase(buffKey+"-team", -1),
-			Amount: func(ai info.AttackInfo) float64 {
-				if !teamBuffActive() || !attacks.AttackTagIsStellar(ai.AttackTag) {
-					return 0
-				}
-				return set4StellarDMG
-			},
-		})
 	}
 
 	atkBuff := make([]float64, attributes.EndStatType)

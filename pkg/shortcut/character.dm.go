@@ -100,6 +100,7 @@ var CharNameToKey = map[string]keys.Char{
 	"lisa":                    keys.Lisa,
 	"lumineanemo":             keys.LumineAnemo,
 	"traveleranemo":           keys.LumineAnemo,
+	"luminecryo":              keys.LumineCryo,
 	"luminedendro":            keys.LumineDendro,
 	"travelerdendro":          keys.LumineDendro,
 	"lumineelectro":           keys.LumineElectro,
