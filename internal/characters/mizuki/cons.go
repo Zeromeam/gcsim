@@ -71,7 +71,9 @@ func (c *char) c1() {
 
 		// Triggering SSW grants Radiance, so the accompanying hit is direct
 		// Stellar Swirl damage even on the first reaction that grants it.
-		queueAdditionalAttack(e, true)
+		if c.witchRevelation {
+			queueAdditionalAttack(e, true)
+		}
 		e.DeleteStatus(c1Key)
 	}, c1Key+"-stellar-swirl")
 
@@ -112,7 +114,9 @@ func (c *char) c1() {
 		atk.Info.FlatDmg += additionalDmg
 		atk.Info.Abil += " (Mizuki C1)"
 
-		queueAdditionalAttack(e, c.StatusIsActive("mizuki-radiance-stellar-swirl"))
+		if c.witchRevelation {
+			queueAdditionalAttack(e, c.StatusIsActive("mizuki-radiance-stellar-swirl"))
+		}
 
 		// Cancel the effect
 		e.DeleteStatus(c1Key)
@@ -164,6 +168,10 @@ func (c *char) c2() {
 				return c.c2Buff
 			},
 		})
+	}
+
+	if !c.witchRevelation {
+		return
 	}
 
 	c.Core.Events.Subscribe(event.OnEnemyHit, func(args ...any) {

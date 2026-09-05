@@ -20,10 +20,12 @@ type char struct {
 	c2Buff                          []float64
 	c4EnergyGenerationsRemaining    int
 	witchReady                      bool
+	witchRevelation                 bool
 }
 
-func NewChar(s *core.Core, w *character.CharWrapper, _ info.CharacterProfile) error {
-	c := char{}
+func NewChar(s *core.Core, w *character.CharWrapper, p info.CharacterProfile) error {
+	witchRevelation, ok := p.Params["witch_revelation"]
+	c := char{witchRevelation: !ok || witchRevelation != 0}
 	c.Character = tmpl.NewWithWrapper(s, w)
 
 	c.EnergyMax = 60
@@ -43,7 +45,9 @@ func (c *char) Init() error {
 	c.c1()
 	c.c2()
 	c.c6()
-	c.witchRevelation()
+	if c.witchRevelation {
+		c.witchRevelationInit()
+	}
 	return nil
 }
 

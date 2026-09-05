@@ -1987,6 +1987,11 @@
   ],
   "yumemizukimizuki": [
     {
+      "ability": "-",
+      "param": "witch_revelation",
+      "desc": "0 for the base kit, 1 (default) after completing Witch's Revelation. Set via '+params=[witch_revelation=...]' in Mizuki's 'char' line."
+    },
+    {
       "ability": "attack",
       "param": "travel",
       "desc": "Projectile travel time. Default 10 frames."

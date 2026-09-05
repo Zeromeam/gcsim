@@ -157,6 +157,9 @@ func (c *char) skillInit() {
 				case attacks.AttackTagSwirlHydro:
 				case attacks.AttackTagSwirlPyro:
 				case attacks.AttackTagReactionStellarSwirl, attacks.AttackTagDirectStellarSwirl:
+					if !c.witchRevelation {
+						return 0
+					}
 					return stellarSwirlDMG[c.TalentLvlSkill()] * c.Stat(attributes.EM) * 0.01
 				default:
 					return 0
@@ -166,19 +169,21 @@ func (c *char) skillInit() {
 			},
 		})
 
-		char.AddStatMod(character.StatMod{
-			Base:         modifier.NewBase(dreamDrifterEMBuffKey, -1),
-			AffectedStat: attributes.EM,
-			Extra:        true,
-			Amount: func() []float64 {
-				if !c.StatusIsActive(dreamDrifterStateKey) {
-					return nil
-				}
-				m := make([]float64, attributes.EndStatType)
-				m[attributes.EM] = 0.10 * c.NonExtraStat(attributes.EM)
-				return m
-			},
-		})
+		if c.witchRevelation {
+			char.AddStatMod(character.StatMod{
+				Base:         modifier.NewBase(dreamDrifterEMBuffKey, -1),
+				AffectedStat: attributes.EM,
+				Extra:        true,
+				Amount: func() []float64 {
+					if !c.StatusIsActive(dreamDrifterStateKey) {
+						return nil
+					}
+					m := make([]float64, attributes.EndStatType)
+					m[attributes.EM] = 0.10 * c.NonExtraStat(attributes.EM)
+					return m
+				},
+			})
+		}
 	}
 
 	// Remove the dreamDrifter state when she leaves the field
@@ -273,7 +278,7 @@ func (c *char) cloudTask(travel, src, hitmark int) {
 	}, hitmark)
 }
 
-func (c *char) witchRevelation() {
+func (c *char) witchRevelationInit() {
 	trigger := func(args ...any) {
 		atk := args[1].(*info.AttackEvent)
 		if atk.Info.ActorIndex != c.Index() || !c.StatusIsActive(dreamDrifterStateKey) || c.StatusIsActive(witchICDKey) {
